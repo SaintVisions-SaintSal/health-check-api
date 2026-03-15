@@ -1,0 +1,72 @@
+# Render Blueprint â https://render.com/docs/blueprint-spec
+# Deploy this service by connecting your GitHub repo to Render
+# and pointing to this file.
+
+services:
+  - type: web
+    name: health-check-api
+    runtime: node
+    region: oregon
+    plan: starter
+
+    # Build configuration
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+
+    # Health check â Render uses this to verify deployment success
+    healthCheckPath: /api/health/live
+
+    # Auto-deploy on every push to main
+    autoDeploy: true
+
+    # Environment variables
+    # Sensitive values (DATABASE_URL, secrets) should be set in the
+    # Render dashboard or via a Render Environment Group â never in this file.
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: PORT
+        value: 3000
+
+      - key: APP_VERSION
+        # Render injects RENDER_GIT_COMMIT; we use it as the version at runtime.
+        # Override this in the dashboard with your semantic version if preferred.
+        value: 1.0.0
+
+      - key: DB_POOL_MAX
+        value: 10
+
+      - key: DB_POOL_IDLE_TIMEOUT_MS
+        value: 30000
+
+      - key: DB_CONNECT_TIMEOUT_MS
+        value: 5000
+
+      - key: HEALTH_CACHE_TTL_MS
+        value: 10000
+
+      - key: MEMORY_THRESHOLD_PERCENT
+        value: 90
+
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 60000
+
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 60
+
+      # DATABASE_URL must be set in the Render dashboard or linked
+      # to a Render PostgreSQL instance via an environment group.
+      # Do NOT commit the actual connection string here.
+      - key: DATABASE_URL
+        sync: false
+
+    # Optional: link a Render-managed PostgreSQL database
+    # Uncomment and adjust if you want Render to provision the DB.
+    #
+    # databases:
+    #   - name: health-check-db
+    #     databaseName: healthcheck
+    #     user: healthcheck_user
+    #     plan: starter
+    #     region: oregon
